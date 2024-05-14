@@ -12,9 +12,9 @@ SETPOINT = 0
 INITIAL_HEIGHT = -50
 
 # PID Values that can be tuned (can be tuned by using the stabilization time printed in the terminal)
-KP = 0.9
-KI = 0.2
-KD = 0.4
+KP = 0.88
+KI = 0.21
+KD = 0.62
 
 # Properties of the rocket
 MASS = 1
