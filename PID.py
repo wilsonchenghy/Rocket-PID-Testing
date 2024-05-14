@@ -1,10 +1,12 @@
 import turtle
 import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 
 ### Initialise Global Parameters
-SIM_DURATION = 100
+SIM_DURATION = 15
 TIME_STEP = 0.1
 
 SETPOINT = 0
@@ -44,6 +46,13 @@ class Simulation(object):
 
         self.pid_controller = PID(KP, KI, KD, SETPOINT)
 
+        self.timeData = []
+        self.thrustData = []
+        self.positionData = []
+        self.errorData = []
+        self.derivativeErrorData = []
+        self.integralErrorData = []
+
     def run(self):
         presentTime = time.time()
         prevTime = presentTime
@@ -73,6 +82,14 @@ class Simulation(object):
                     # self.rocket.printData()
                     # print(" ")
 
+                    # Append data to lists
+                    self.timeData.append(currentTime)
+                    self.thrustData.append(thrust)
+                    self.positionData.append(rocketHeight)
+                    self.errorData.append(self.pid_controller.getError())
+                    self.derivativeErrorData.append(self.pid_controller.getDerivativeError())
+                    self.integralErrorData.append(self.pid_controller.getIntegralError())
+
                     # Print stabilization time
                     if abs(rocketHeight - SETPOINT) < 2:
                         counterForStabilization += 1
@@ -85,6 +102,8 @@ class Simulation(object):
 
 
                 prevTime = time.time()
+
+        plotData(self.timeData, self.positionData, self.thrustData, self.errorData, self.derivativeErrorData, self.integralErrorData)
 
         print("Simulation Complete")
         turtle.done()
@@ -162,8 +181,6 @@ class PID(object):
             self.integralError = self.integralError
         else:
             self.integralError += self.error * TIME_STEP
-            # print(f'integralError: {self.integralError}')
-
 
         if (self.output > MAX_THRUST):
             self.output = MAX_THRUST
@@ -171,6 +188,39 @@ class PID(object):
             self.output = 0
 
         return self.output
+    
+    def getError(self):
+        return self.error
+    
+    def getDerivativeError(self):
+        return self.derivativeError
+    
+    def getIntegralError(self):
+        return self.integralError
+    
+
+
+def plotData(timeData, positionData, thrustData, errorData, derivativeErrorData, integralErrorData):
+
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1, sharex=True)
+    fig.subplots_adjust(hspace=0.5)
+
+    ax1.plot(timeData, positionData)
+    ax1.set_ylabel('Y_Position')
+
+    ax2.plot(timeData, thrustData, color='r')
+    ax2.set_ylabel('Thrust')
+
+    ax3.plot(timeData, errorData, color='orange')
+    ax3.set_ylabel('Error')
+
+    ax4.plot(timeData, derivativeErrorData, color='brown')
+    ax4.set_ylabel('D_Error')
+
+    ax5.plot(timeData, integralErrorData, color='purple')
+    ax5.set_ylabel('DD_Error')
+
+    plt.show()
 
 
 
